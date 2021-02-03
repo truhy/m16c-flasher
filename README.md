@@ -29,7 +29,7 @@ Limitations
 -----------
 
 The input and output file format is binary, I was too lazy to implement the official .mot (motorola format).
-User SRecord to convert between .bin and .mot:
+Use SRecord to convert between .bin and .mot:
 http://srecord.sourceforge.net/
 
 Sometimes the MCU will not respond, you may have to retry by powering off and on - most likely problem is MCU serial clock timing is slightly off.
