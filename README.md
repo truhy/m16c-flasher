@@ -40,20 +40,21 @@ Discovered random notes
 
 There is a German reader/flasher program that worked to readout most of it, but it cannot read user block A:
 https://m16c.mikrokopter.de/M16C-Flasher.19.0.html
+
 Unfortunately the firmware placed some codes in that area so I needed to read that out.
 
 I found that the official Renesas Flash Starter source code doesn't work properly when flashing or downloading using MCU M30624FGPGP, perhaps it is only for older MCUs.
 I've traced the problem to the serial write code, i.e. transmitting from the PC to the M16C chip.
 I think the problem is that delays are needed between transmitting between bytes and it worked before because PC's back then were slow!
-Most likely the Renesas like many other MCU's the serial clock is not exact, and on modern PCs the serial COM interface expects a tighter clock?
-Anyway my solution is to send 1 byte at a time instead of a stream.
+Most likely the Renesas like many other MCUs the serial clock is not exact, and on modern PCs the serial COM interface expects a tighter clock?
+Anyway, my solution sends 1 byte at a time (delay in between) instead of a stream.
 
 Some of the description in the documentation (datasheet & application note) about the built-in bootloader is plain wrong.
-I can only say about the bootloader VER.4.04 because that was on the M30624FGPGP.
+I can only say this about the bootloader VER.4.04 because that was on the M30624FGPGP.
 
 Misinformation discovery 1:
-Datasheet says user ROM block A is not accessible under the bootloader.
-I am able to read, erase and flash the entire user ROM block A (0x00F000 to 0x00FFFF) using the bootloader.
+Datasheet says user area block A is not accessible under the bootloader.
+I am able to read, erase and flash the entire user area block A (0x00F000 to 0x00FFFF) using the bootloader.
 Examining the bootloader disassembly, the code turns on the CPU rewrite mode which automatically sets PM10 and PM13 giving access to the entire internal ROM area.
 
 Misinformation discovery 2:
