@@ -39,8 +39,8 @@ Discovered random notes
 -----------------------
 
 There is a German reader/flasher program that worked to readout most of it, but it cannot read user block A:
-reader/flasher https://m16c.mikrokopter.de/M16C-Flasher.19.0.html
-Unfortunately the firmware placed some codes in that area so I need to read that out.
+https://m16c.mikrokopter.de/M16C-Flasher.19.0.html
+Unfortunately the firmware placed some codes in that area so I needed to read that out.
 
 I found that the official Renesas Flash Starter source code doesn't work properly when flashing or downloading using MCU M30624FGPGP, perhaps it is only for older MCUs.
 I've traced the problem to the serial write code, i.e. transmitting from the PC to the M16C chip.
