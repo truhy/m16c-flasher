@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="m16cflasher" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="../build/linux/Debug/m16cflasher" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../build/linux/Debug/obj" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-std=gnu++20" />
+					<Add option="-g" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="../build/linux/Release/m16cflasher" prefix_auto="1" extension_auto="1" />
+				<Option object_output="../build/linux/Release/obj" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-std=gnu++20" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Unit filename="app_error_string.h" />
+		<Unit filename="cmd_line.cpp" />
+		<Unit filename="cmd_line.h" />
+		<Unit filename="m16c_cmds.cpp" />
+		<Unit filename="m16c_cmds.h" />
+		<Unit filename="m16c_mem_map.cpp" />
+		<Unit filename="m16c_mem_map.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="my_buf.h" />
+		<Unit filename="my_file.cpp" />
+		<Unit filename="my_file.h" />
+		<Unit filename="serial_com.cpp" />
+		<Unit filename="serial_com.h" />
+		<Unit filename="tc_string.cpp" />
+		<Unit filename="tc_string.h" />
+		<Unit filename="to_string.h" />
+		<Unit filename="tru_exception.h" />
+		<Unit filename="tru_macro.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>
