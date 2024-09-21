@@ -1,10 +1,11 @@
 #ifndef M16C_MEM_MAP_H
 #define M16C_MEM_MAP_H
 
-#include "my_types.h"
+#include <string>
 #include <list>
+#include <cstdint>
 
-//For block A this source file numbers it as block 255
+// For block A this source file numbers it as block 255
 #define FLASH_BLOCK_A_NAME   "A"
 #define FLASH_BLOCK_A_NR     255
 #define FLASH_BLOCK_A_BEGIN  0x00F000
@@ -81,11 +82,11 @@
 
 class cl_m16c_flash_block{
 public:
-	std::string m_block_name;
-	unsigned char m_block_nr;
-	my_uint32 m_block_begin;
-	my_uint32 m_block_end;
-	my_uint32 m_block_size;
+	std::string m_block_name = "";
+	unsigned char m_block_nr = 0;
+	uint32_t m_block_begin = 0;
+	uint32_t m_block_end = 0;
+	uint32_t m_block_size = 0;
 
 
 	cl_m16c_flash_block(){
@@ -93,9 +94,9 @@ public:
 	cl_m16c_flash_block(
 		std::string m_arg_block_name,
 		unsigned char m_arg_block_nr,
-		my_uint32 m_arg_block_begin,
-		my_uint32 m_arg_block_end,
-		my_uint32 m_arg_block_size
+		uint32_t m_arg_block_begin,
+		uint32_t m_arg_block_end,
+		uint32_t m_arg_block_size
 	) :
 		m_block_name(m_arg_block_name),
 		m_block_nr(m_arg_block_nr),
@@ -109,24 +110,24 @@ class cl_m16c_mem_map{
 public:
 	static const cl_m16c_flash_block m_m16c_flash_blocks[];
 
-	//Converts address to a flash block info
-	static my_bool addr_to_flash_block(my_uint32 m_arg_addr, cl_m16c_flash_block& m_arg_flash_block){
-		my_uint32 m_i;
+	// Converts address to a flash block info
+	static bool addr_to_flash_block(uint32_t m_arg_addr, cl_m16c_flash_block& m_arg_flash_block){
+		uint32_t m_i;
 
 		for(m_i = 0; m_i < TOTAL_FLASH_BLOCKS; ++m_i){
 			if((m_arg_addr >= m_m16c_flash_blocks[m_i].m_block_begin) && (m_arg_addr <= m_m16c_flash_blocks[m_i].m_block_end)){
 				m_arg_flash_block = m_m16c_flash_blocks[m_i];
-				return TRUE;
+				return true;
 			}
 		}
 
-		return FALSE;
+		return false;
 	}
 
-	//Converts address range to a flash block list info
-	static void addr_range_to_flash_block_list(my_uint32 m_arg_addr_begin, my_uint32 m_arg_addr_end, std::list<cl_m16c_flash_block>& m_arg_flash_block_list){
+	// Converts address range to a flash block list info
+	static void addr_range_to_flash_block_list(uint32_t m_arg_addr_begin, uint32_t m_arg_addr_end, std::list<cl_m16c_flash_block>& m_arg_flash_block_list){
 		cl_m16c_flash_block m_flash_block;
-		my_uint32 m_i;
+		uint32_t m_i;
 
 		m_arg_flash_block_list.clear();
 

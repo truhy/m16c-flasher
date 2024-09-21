@@ -9,7 +9,7 @@
 #include <iomanip>
 #include <sstream>
 
-namespace ns_to_string_utils{
+namespace string_utils_ns{
 	template<class T>
 	std::string to_string(const T& m_arg_source){
 		std::ostringstream m_oss;

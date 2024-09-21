@@ -1,7 +1,9 @@
 #ifndef MY_BUF_H
 #define MY_BUF_H
 
-#include "my_types.h"
+#include "tru_exception.h"
+#include <stdlib.h>
+#include <cstdint>
 
 class cl_my_buf{
 protected:
@@ -20,7 +22,7 @@ public:
 	unsigned char* buf(){
 		return m_buf;
 	}
-	my_bool alloc_buf(my_uint32 m_arg_len){
+	void alloc_buf(uint32_t m_arg_len){
 		if(m_buf != NULL){
 			free(m_buf);
 			m_buf = NULL;
@@ -28,9 +30,9 @@ public:
 
 		m_buf = (unsigned char*)malloc(m_arg_len);
 		if(m_buf == NULL){
-			return FALSE;
+			errno = ENOMEM;
+			throw tru_exception::get_clib_last_error(__func__, "");
 		}
-		return TRUE;
 	}
 };
 

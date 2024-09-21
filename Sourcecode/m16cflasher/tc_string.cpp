@@ -1,10 +1,12 @@
 #include "tc_string.h"
 
-tc_string ns_tc_string_utils::str_to_tc(std::string m_arg_str){
+#if defined(WIN32) || defined(WIN64)
+
+tc_string string_utils_ns::str_to_tc(std::string m_arg_str){
 	return tc_string(m_arg_str.begin(), m_arg_str.end());
 }
 
-std::string ns_tc_string_utils::tc_to_str(tc_string m_arg_tc_str){
+std::string string_utils_ns::tc_to_str(tc_string m_arg_tc_str){
 	return std::string(m_arg_tc_str.begin(), m_arg_tc_str.end());
 }
 
@@ -15,7 +17,7 @@ tc_string ns_tc_string_utils::str_to_tc(std::string m_arg_str){
 	tc_string m_tc_str;
 	wchar_t* m_wchar_str_ptr;
 
-	m_wchar_str_ptr = new wchar_t[m_arg_str.size()]; 
+	m_wchar_str_ptr = new wchar_t[m_arg_str.size()];
 	mbstowcs(m_wchar_str_ptr, m_arg_str.data(), m_arg_str.size());
 	m_tc_str.assign(m_wchar_str_ptr, m_arg_str.size());
 	delete [] m_wchar_str_ptr;
@@ -35,3 +37,5 @@ std::string ns_tc_string_utils::tc_to_str(tc_string m_arg_tc_str){
 	return m_str;
 }
 */
+
+#endif

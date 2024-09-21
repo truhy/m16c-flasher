@@ -1,0 +1,87 @@
+# depslib dependency file v1.0
+1725656160 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/my_file.cpp
+	"my_file.h"
+	"tru_exception.h"
+
+1723101688 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/my_file.h
+	<stdio.h>
+	<string>
+
+1725206274 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/tru_exception.h
+	"to_string.h"
+	<string>
+	<cstring>
+	<windows.h>
+	<errno.h>
+
+1717451356 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/to_string.h
+	<string>
+	<iomanip>
+	<sstream>
+
+1725721063 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/serial_com.cpp
+	"serial_com.h"
+	"tru_exception.h"
+	<stdio.h>
+	<sys/ioctl.h>
+
+1725721063 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/serial_com.h
+	"tru_macro.h"
+	"tc_string.h"
+	<windows.h>
+	<cstdint>
+	<string>
+	"tru_macro.h"
+	<cstdint>
+	<string>
+	<fcntl.h>
+	<errno.h>
+	<unistd.h>
+	<termios.h>
+
+1725720829 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/tru_macro.h
+
+1719509981 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/tc_string.h
+	<tchar.h>
+	<string>
+	<sstream>
+	<iomanip>
+
+1725206364 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/tc_string.cpp
+	"tc_string.h"
+
+1582475154 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/m16c_mem_map.cpp
+	"m16c_mem_map.h"
+
+1725750982 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/m16c_mem_map.h
+	<string>
+	<list>
+	<cstdint>
+
+1725751052 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/cmd_line.cpp
+	"cmd_line.h"
+
+1725751001 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/cmd_line.h
+	"m16c_cmds.h"
+	<string>
+
+1725733042 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/m16c_cmds.h
+	"serial_com.h"
+	"my_buf.h"
+
+1725661422 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/my_buf.h
+	"tru_exception.h"
+	<stdlib.h>
+	<cstdint>
+
+1725751335 source:/home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/m16c_cmds.cpp
+	"m16c_cmds.h"
+	"app_error_string.h"
+	<format>
+	<Windows.h>
+	<unistd.h>
+
+1725738735 /home/truong/Programming/c++/M16C/m16cflasher/m16cflasher/app_error_string.h
+	"tru_macro.h"
+	<cstdint>
+
