@@ -1,13 +1,36 @@
+/*
+	MIT License
+
+	Copyright (c) 2024 Truong Hy
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in all
+	copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+	SOFTWARE.
+*/
+
 #include "serial_com.h"
 #include "tru_exception.h"
 #include <stdio.h>
 
 #if defined(WIN32) || defined(WIN64)
-#else
-#include <sys/ioctl.h>
-#endif
 
-#if defined(WIN32) || defined(WIN64)
+// =======
+// Windows
+// =======
 
 serial_com::serial_com() :
 	fd(INVALID_HANDLE_VALUE),
@@ -169,7 +192,7 @@ DWORD serial_com::read_port(void *buf, uint32_t len){
 								switch(read_error){
 									case ERROR_HANDLE_EOF: break;  // End of file reached!
 									case ERROR_IO_INCOMPLETE: break;  // IO is still pending
-									case ERROR_IO_PENDING: CancelIo(read_handle); break;  // IO is still pending, cancel the read
+									case ERROR_IO_PENDING: CancelIo(fd); break;  // IO is still pending, cancel the read
 								}
 							}
 							bytes_read += overlapped_bytes_read;
@@ -234,7 +257,7 @@ DWORD serial_com::write_port(void *buf, uint32_t len){
 								write_error = GetLastError();
 								switch(write_error){
 									case ERROR_IO_INCOMPLETE: break;  // IO is still pending
-									case ERROR_IO_PENDING: CancelIo(read_handle); break;  // IO is still pending, cancel the read
+									case ERROR_IO_PENDING: CancelIo(fd); break;  // IO is still pending, cancel the read
 								}
 							}
 							bytes_written += overlapped_bytes_written;
@@ -269,6 +292,7 @@ DWORD serial_com::write_port(void *buf, uint32_t len){
 }
 
 #else
+
 /*
 DWORD serial_com::read_port(void *buf, uint32_t len){
 	ULONGLONG prev_time;
@@ -349,6 +373,12 @@ void serial_com::purge(){
 }
 
 #else
+
+// =====
+// Linux
+// =====
+
+#include <sys/ioctl.h>
 
 serial_com::serial_com() :
 	fd(-1){
