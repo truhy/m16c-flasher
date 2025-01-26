@@ -13,7 +13,7 @@ The MCU can be placed into special programming bootloader serial I/O (TTL RS232)
 I decided to write my own M16C reader/flasher program for bootloader serial I/O mode.
 Tested working on M16C M30624FGPGP.
 
-It is a Windows console application program coded in C/C++ using MS Visual Studio 2012.
+It is a console application program coded in C/C++ originally for Windows with Visual Studio 2012, but recently ported to linux.  You'll find IDE files .sln for Visual Studio 2012 (Windows) and .cbp for CodeBlocks (Linux and Windows).
 
 Set to default serial settings:
 9600, 8 bits data, no parity, 1 stop bit
