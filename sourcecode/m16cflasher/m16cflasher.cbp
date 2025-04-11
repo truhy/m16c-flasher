@@ -8,7 +8,7 @@
 		<Build>
 			<Target title="Debug">
 				<Option output="../build/linux/Debug/m16cflasher" prefix_auto="1" extension_auto="1" />
-				<Option object_output="../build/linux/Debug/obj" />
+				<Option object_output="../build/linux/obj/Debug" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
@@ -18,7 +18,7 @@
 			</Target>
 			<Target title="Release">
 				<Option output="../build/linux/Release/m16cflasher" prefix_auto="1" extension_auto="1" />
-				<Option object_output="../build/linux/Release/obj" />
+				<Option object_output="../build/linux/obj/Release" />
 				<Option type="1" />
 				<Option compiler="gcc" />
 				<Compiler>
