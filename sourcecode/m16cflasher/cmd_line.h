@@ -7,6 +7,7 @@
 // Main commands
 typedef enum{
 	CMD_NONE,
+	CMD_AUTO_BAUD,
 	CMD_VER,
 	CMD_STATUS,
 	CMD_ID_CHK,
@@ -35,7 +36,7 @@ public:
 	std::string m_full_file_name;
 	bool m_is_blank_chk_before_program;
 	bool m_is_erase_before_program;
-	unsigned char m_num_erase_program_error_retry;
+	unsigned int m_num_erase_program_error_retry;
 
 	cl_my_params() :
 		m_cmd(CMD_NONE),
@@ -45,7 +46,7 @@ public:
 		m_to_addr(0),
 		m_is_blank_chk_before_program(false),
 		m_is_erase_before_program(false),
-		m_num_erase_program_error_retry(1){
+		m_num_erase_program_error_retry(3){
 	}
 };
 
