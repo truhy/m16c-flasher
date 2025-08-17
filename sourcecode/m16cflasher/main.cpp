@@ -15,6 +15,7 @@
 #include "my_file.h"
 #include "my_buf.h"
 #include "m16c_mem_map.h"
+#include "app_error_string.h"
 #include <stdio.h>
 #include <iostream>
 
@@ -220,7 +221,7 @@ void process_program_flash_from_file(cl_my_params& m_arg_my_params, serial_com& 
 	uint32_t m_i;
 	size_t m_bytes_read;
 	bool m_is_blank = false;
-	unsigned char m_retry_count = 0;
+	unsigned int m_retry_count = 0;
 	uint32_t m_num_blocks;
 	uint32_t m_file_to_block_start_offset;
 	uint32_t m_file_to_block_size;
@@ -236,13 +237,6 @@ void process_program_flash_from_file(cl_my_params& m_arg_my_params, serial_com& 
 	if(m_arg_my_params.m_is_blank_chk_before_program){
 		process_blank_check(m_arg_my_params, m_arg_serial_com, m_arg_m16c_cmd, m_is_blank);
 	}
-
-	// Need to erase?
-	/*
-	if(m_arg_my_params.m_is_erase_before_program && !m_is_blank){
-		process_erase_blocks(m_arg_my_params, m_arg_serial_com, m_arg_m16c_cmd, m_arg_my_params.m_from_addr, m_arg_my_params.m_to_addr);
-	}
-	*/
 
 	std::cout << "Total range to program: 0x" << string_utils_ns::to_string_right_hex(m_arg_my_params.m_from_addr, 6, '0') << " to 0x" << string_utils_ns::to_string_right_hex(m_arg_my_params.m_to_addr, 6, '0') << std::endl;
 
@@ -280,19 +274,20 @@ void process_program_flash_from_file(cl_my_params& m_arg_my_params, serial_com& 
 		}
 
 		// Iterate block pages (256 bytes at a time) and program (flash)
-		do{
-			std::cout <<
-				"Block " <<
-				m_iter->m_block_name << " (0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_begin, 6, '0') <<
-				" to 0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_end, 6, '0') <<
-				", " <<
-				m_iter->m_block_size <<
-				" bytes)" <<
-				std::endl;
+		std::cout <<
+			"Block " <<
+			m_iter->m_block_name << " (0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_begin, 6, '0') <<
+			" to 0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_end, 6, '0') <<
+			", " <<
+			m_iter->m_block_size <<
+			" bytes)" <<
+			std::endl;
 
-			m_num_blocks = m_iter->m_block_size / 256;
-			// Iterate a page
-			for(m_i = 0; m_i < m_num_blocks; ++m_i){
+		m_num_blocks = m_iter->m_block_size / 256;
+
+		// Iterate a page
+		for(m_i = 0; m_i < m_num_blocks; ++m_i){
+			do{
 				std::cout << "Programming: 0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_begin + m_i * 256, 6, '0') << " to 0x" << string_utils_ns::to_string_right_hex(m_iter->m_block_begin + m_i * 256 + 255, 6, '0') << std::endl;
 
 				// Flash memory
@@ -316,19 +311,20 @@ void process_program_flash_from_file(cl_my_params& m_arg_my_params, serial_com& 
 
 					if(m_retry_count < m_arg_my_params.m_num_erase_program_error_retry){
 						++m_retry_count;
-						std::cout << "Retrying (" << m_retry_count << " of " << m_arg_my_params.m_num_erase_program_error_retry << ")" << std::endl;
+						std::cout << "Retrying (" << m_retry_count << " of " << m_arg_my_params.m_num_erase_program_error_retry << ") block " << m_i << std::endl;
 
 						process_clear_status(m_arg_my_params, m_arg_serial_com, m_arg_m16c_cmd);
-						process_erase_blocks(m_arg_my_params, m_arg_serial_com, m_arg_m16c_cmd, m_iter->m_block_begin, m_iter->m_block_end);
-
-						// Exit the for loop
-						break;
 					}else{
-						return;
+						std::cout << "Max retry of " << m_arg_my_params.m_num_erase_program_error_retry << " reached" << std::endl;
+						throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_RETRY, app_error_string::messages[APP_ERROR_RETRY], "");
 					}
 				}
-			}
-		}while(m_retry_count > 0);
+				else
+				{
+					m_retry_count = 0;
+				}
+			}while(m_retry_count > 0);
+		}
 	}
 }
 
@@ -382,13 +378,24 @@ void process_cmd_line(cl_my_params& m_arg_my_params){
 	bool m_is_blank;
 
 	m_serial_com.open_handle(m_arg_my_params.m_dev_path);  // Open serial COM port
-	m_serial_com.set_timeout(5000);
-	// Set serial com device baudrate and parameters
-	m_serial_com.set_params(m_arg_my_params.m_baud_rate, 8, NOPARITY, ONESTOPBIT, false);
-	// Set MCU baudrate
-	m_m16c_cmd.set_baud_rate(m_serial_com, m_arg_my_params.m_baud_rate);
+
+	if (m_arg_my_params.m_cmd != CMD_AUTO_BAUD) {
+		m_serial_com.set_timeout(5000);
+		// Set serial com device baudrate and parameters
+		m_serial_com.set_params(m_arg_my_params.m_baud_rate, 8, NOPARITY, ONESTOPBIT, false);
+
+		// Set MCU baudrate
+		m_m16c_cmd.set_baud_rate(m_serial_com, m_arg_my_params.m_baud_rate);
+	}
 
 	switch(m_arg_my_params.m_cmd){
+		case CMD_AUTO_BAUD:
+			m_serial_com.set_timeout(500);
+			m_serial_com.set_params(9600, 8, NOPARITY, ONESTOPBIT, false);
+			m_m16c_cmd.auto_baud(m_serial_com);
+			m_m16c_cmd.set_baud_rate(m_serial_com, m_arg_my_params.m_baud_rate);
+			std::cout << "OK: " << m_arg_my_params.m_baud_rate << std::endl;
+			break;
 		case CMD_VER:
 			m_m16c_cmd.rd_version(m_serial_com);
 			m_ver_str.assign((char*)m_m16c_cmd.m_ver, 8);

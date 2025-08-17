@@ -4,9 +4,10 @@
 #include "serial_com.h"
 #include "my_buf.h"
 
-#define DEFAULT_BAUD_RATE 9600
+#define DEFAULT_BAUD_RATE 57600
 
-#define SLEEP_CMD_INTERVAL 50
+#define SLEEP_CMD_INTERVAL 5
+#define SLEEP_AUTO_BAUD_INTERVAL 40
 
 #define M16C_BL_CMD_CODE_9600                  0xB0
 #define M16C_BL_CMD_CODE_19200                 0xB1
@@ -36,6 +37,7 @@ public:
 
 	cl_m16c_cmd();
 	unsigned char baud_rate_cmd_code(uint32_t m_arg_baud_rate);
+	void auto_baud(serial_com& m_arg_serial_com);
 	void set_baud_rate(serial_com& m_arg_serial_com, uint32_t m_arg_baud_rate);
 	void rd_version(serial_com& m_arg_serial_com);
 	void rd_status(serial_com& m_arg_serial_com);

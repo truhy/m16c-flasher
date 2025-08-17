@@ -11,6 +11,7 @@
 	item(APP_ERROR_RX_FAIL_ID, "Received failed") \
 	item(APP_ERROR_XFER_INFO_ID, "Requested {} byte(s) but {} transferred") \
 	item(APP_ERROR_ECHO_ID, "Echo failed") \
+	item(APP_ERROR_RETRY, "Retries exhausted") \
 	item(APP_ERROR_ECHO_INFO_ID, "Transmitted 0x{:02x} but received 0x{:02x}")
 
 // Create enum from error message list

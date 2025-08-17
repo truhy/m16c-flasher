@@ -72,6 +72,7 @@ void usage(char* m_arg_0){
 	printf("\n");
 	printf("cmdparams:\n");
 	printf("ver              : read bootloader version\n");
+	printf("autobaud         : perform auto-baud sequence\n");
 	printf("status           : read status\n");
 	printf("id_chk           : check id\n");
 	printf("  id_addr=<n>     : addr of 1st byte of id\n");
@@ -116,6 +117,7 @@ void usage(char* m_arg_0){
 	printf("  to_addr=<n>     : to address\n");
 	printf("  blank_chk=<y|n> : enable blank check\n");
 	printf("  erase=<y|n>     : enable erase\n");
+	printf("  file=<s>        : file\n");
 	printf("download         : download to ram and run\n");
 	printf("  id_addr=<n>     : addr of 1st byte of id\n");
 	printf("  id=<hex>        : id hex string\n");
@@ -129,6 +131,10 @@ void usage(char* m_arg_0){
 }
 
 bool parse_params_search(char* m_arg_cmdl_param, cl_my_params& m_arg_my_params){
+	if(parse_param_exist(m_arg_cmdl_param, "autobaud")){
+		m_arg_my_params.m_cmd = CMD_AUTO_BAUD;
+		return true;
+	}
 	if(parse_param_exist(m_arg_cmdl_param, "ver")){
 		m_arg_my_params.m_cmd = CMD_VER;
 		return true;
