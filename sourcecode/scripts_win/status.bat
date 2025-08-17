@@ -2,7 +2,7 @@
 CALL env_win.bat
 
 :: Run
-SET runcmd=%APP% status path=%SERIALPATH%
+SET runcmd=%APP% path=%SERIALPATH% baud=9600 status
 ECHO %runcmd%
 %runcmd% & IF %errorlevel% NEQ 0 GOTO :err_handler
 

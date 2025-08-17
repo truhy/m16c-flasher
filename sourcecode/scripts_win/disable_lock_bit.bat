@@ -2,7 +2,7 @@
 CALL env_win.bat
 
 :: Run
-SET runcmd=%APP% lock_off path=%SERIALPATH% id_addr=0x0FFFDF id=00000000000000
+SET runcmd=%APP% path=%SERIALPATH% baud=9600 lock_off id_addr=0x0FFFDF id=00000000000000
 ECHO %runcmd%
 %runcmd% & IF %errorlevel% NEQ 0 GOTO :err_handler
 

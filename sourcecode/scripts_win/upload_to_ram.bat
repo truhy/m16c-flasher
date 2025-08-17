@@ -2,7 +2,7 @@
 CALL env_win.bat
 
 :: Run
-SET runcmd=%APP% download path=%SERIALPATH% id_addr=0x0FFFDF id=00000000000000 file=boot_dl_p8_0.bin
+SET runcmd=%APP% path=%SERIALPATH% baud=9600 download id_addr=0x0FFFDF id=00000000000000 file=boot_dl_p8_0.bin
 ECHO %runcmd%
 %runcmd% & IF %errorlevel% NEQ 0 GOTO :err_handler
 

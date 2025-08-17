@@ -2,7 +2,7 @@
 CALL env_win.bat
 
 :: Run
-SET runcmd=%APP% read path=%SERIALPATH% id_addr=0x0FFFDF id=00000000000000 from_addr=0x0C0000 to_addr=0x0FFFFF file="dump-block-0-to-c.bin"
+SET runcmd=%APP% path=%SERIALPATH% baud=9600 read id_addr=0x0FFFDF id=00000000000000 from_addr=0x0C0000 to_addr=0x0FFFFF file="dump-block-0-to-c.bin"
 ECHO %runcmd%
 %runcmd% & IF %errorlevel% NEQ 0 GOTO :err_handler
 

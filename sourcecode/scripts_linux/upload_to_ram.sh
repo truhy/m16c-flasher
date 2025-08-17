@@ -9,5 +9,5 @@ function cleanup {
 trap cleanup EXIT
 
 source env_linux.sh
-$APP download path=$SERIALPATH id_addr=0x0FFFDF id=00000000000000 file=boot_dl_p8_0.bin
+$APP path=$SERIALPATH baud=9600 download id_addr=0x0FFFDF id=00000000000000 file=boot_dl_p8_0.bin
 if [ $SHLVL -eq 1 ]; then read -n 1 -s -r -p "Press any key to continue"; fi

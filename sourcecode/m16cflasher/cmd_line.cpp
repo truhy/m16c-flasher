@@ -69,6 +69,12 @@ void usage(char* m_arg_0){
 	printf(" %s <devparams> <cmdparams>\n", m_arg_0);
 	printf("devparams:\n");
 	printf("  path=<s> : serial port path\n");
+	printf("  baud=<n> : valid values:\n");
+	printf("              9600\n");
+	printf("              19200\n");
+	printf("              38400\n");
+	printf("              57600\n");
+	printf("              115200\n");
 	printf("\n");
 	printf("cmdparams:\n");
 	printf("ver              : read bootloader version\n");
@@ -192,6 +198,9 @@ bool parse_params_search(char* m_arg_cmdl_param, cl_my_params& m_arg_my_params){
 		return true;
 	}
 	if(parse_param_str(m_arg_cmdl_param, "path=", m_arg_my_params.m_dev_path)){
+		return true;
+	}
+	if(parse_param_val_uint(m_arg_cmdl_param, "baud=", m_arg_my_params.m_baud_rate)){
 		return true;
 	}
 	if(parse_param_val_uint(m_arg_cmdl_param, "id_addr=", m_arg_my_params.m_id_addr)){

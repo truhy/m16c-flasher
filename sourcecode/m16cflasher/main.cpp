@@ -381,11 +381,8 @@ void process_cmd_line(cl_my_params& m_arg_my_params){
 
 	if (m_arg_my_params.m_cmd != CMD_AUTO_BAUD) {
 		m_serial_com.set_timeout(5000);
-		// Set serial com device baudrate and parameters
-		m_serial_com.set_params(m_arg_my_params.m_baud_rate, 8, NOPARITY, ONESTOPBIT, false);
-
-		// Set MCU baudrate
-		m_m16c_cmd.set_baud_rate(m_serial_com, m_arg_my_params.m_baud_rate);
+		m_serial_com.set_params(m_arg_my_params.m_baud_rate, 8, NOPARITY, ONESTOPBIT, false);  // Set serial com device baudrate and parameters
+		m_m16c_cmd.set_baud_rate(m_serial_com, m_arg_my_params.m_baud_rate);  // Set MCU baudrate
 	}
 
 	switch(m_arg_my_params.m_cmd){
