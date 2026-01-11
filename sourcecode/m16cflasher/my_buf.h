@@ -7,29 +7,29 @@
 
 class cl_my_buf{
 protected:
-	unsigned char* m_buf;
+	unsigned char *buf;
 
 public:
 	cl_my_buf() :
-		m_buf(NULL){
+		buf(NULL){
 	}
 	~cl_my_buf(){
-		if(m_buf != NULL){
-			free(m_buf);
-			m_buf = NULL;
+		if(buf != NULL){
+			free(buf);
+			buf = NULL;
 		}
 	}
-	unsigned char* buf(){
-		return m_buf;
+	unsigned char* buf_ptr(){
+		return buf;
 	}
 	void alloc_buf(uint32_t m_arg_len){
-		if(m_buf != NULL){
-			free(m_buf);
-			m_buf = NULL;
+		if(buf != NULL){
+			free(buf);
+			buf = NULL;
 		}
 
-		m_buf = (unsigned char*)malloc(m_arg_len);
-		if(m_buf == NULL){
+		buf = (unsigned char*)malloc(m_arg_len);
+		if(buf == NULL){
 			errno = ENOMEM;
 			throw tru_exception::get_clib_last_error(__func__, "");
 		}

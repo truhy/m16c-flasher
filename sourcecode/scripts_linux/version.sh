@@ -9,5 +9,5 @@ function cleanup {
 trap cleanup EXIT
 
 source env_linux.sh
-$APP path=$SERIALPATH baud=9600 ver
+$APP ver path=$SERIALPATH baud=9600
 if [ $SHLVL -eq 1 ]; then read -n 1 -s -r -p "Press any key to continue"; fi

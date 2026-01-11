@@ -4,7 +4,7 @@
 #include "serial_com.h"
 #include "my_buf.h"
 
-#define DEFAULT_BAUD_RATE 57600
+#define DEFAULT_BAUD_RATE 9600
 
 #define SLEEP_CMD_INTERVAL 5
 #define SLEEP_AUTO_BAUD_INTERVAL 40
@@ -31,30 +31,30 @@
 
 class cl_m16c_cmd{
 public:
-	unsigned char m_ver[8] = {};
-	unsigned char m_srd[2] = {};  //Status Register
-	unsigned char m_lock_bit = 0;  //0 = locked, 1 = unlocked
+	unsigned char ver[8] = {};
+	unsigned char srd[2] = {};  // Status Register
+	unsigned char lock_bit = 0;  // 0 = locked, 1 = unlocked
 
 	cl_m16c_cmd();
-	unsigned char baud_rate_cmd_code(uint32_t m_arg_baud_rate);
-	void auto_baud(serial_com& m_arg_serial_com);
-	void set_baud_rate(serial_com& m_arg_serial_com, uint32_t m_arg_baud_rate);
-	void rd_version(serial_com& m_arg_serial_com);
-	void rd_status(serial_com& m_arg_serial_com);
-	void id_chk(serial_com& m_arg_serial_com, uint32_t m_arg_id_addr, std::string m_arg_id_hex_str);
-	void page_rd(serial_com& m_arg_serial_com, uint32_t m_arg_from_addr, void* m_arg_buf_256);
-	void clear_status(serial_com& m_arg_serial_com);
-	void page_program(serial_com& m_arg_serial_com, uint32_t m_arg_from_addr, void* m_arg_buf_256);
-	void erase_block(serial_com& m_arg_serial_com, uint32_t m_arg_block_highest_addr);
-	void erase_all_unlocked(serial_com& m_arg_serial_com);
-	void read_lock_bit(serial_com& m_arg_serial_com, uint32_t m_arg_block_highest_addr);
-	void lock_bit_program(serial_com& m_arg_serial_com, uint32_t m_arg_block_highest_addr);
-	void lock_bit_enable(serial_com& m_arg_serial_com);
-	void lock_bit_disable(serial_com& m_arg_serial_com);
-	unsigned char calc_checksum(uint16_t m_arg_buf_len, void* m_arg_buf);
-	void download_calc_checksum(serial_com& m_arg_serial_com, uint16_t m_arg_buf_len, void* m_arg_buf);
-	void download(serial_com& m_arg_serial_com, unsigned char m_arg_checksum, uint16_t m_arg_buf_len, void* m_arg_buf);
-	void boot_area_output(serial_com& m_arg_serial_com, uint32_t m_arg_from_addr, void* m_arg_buf_256);
+	unsigned char baud_rate_cmd_code(uint32_t arg_baud_rate);
+	void auto_baud(serial_com &arg_serial_com);
+	void set_baud_rate(serial_com &arg_serial_com, uint32_t arg_baud_rate);
+	void rd_version(serial_com &arg_serial_com);
+	void rd_status(serial_com &arg_serial_com);
+	void id_chk(serial_com &arg_serial_com, uint32_t arg_id_addr, std::string arg_id_hex_str);
+	void page_rd(serial_com &arg_serial_com, uint32_t arg_from_addr, void* arg_buf_256);
+	void clear_status(serial_com &arg_serial_com);
+	void page_program(serial_com &arg_serial_com, uint32_t arg_from_addr, void *arg_buf_256);
+	void erase_block(serial_com &arg_serial_com, uint32_t arg_block_highest_addr);
+	void erase_all_unlocked(serial_com &arg_serial_com);
+	void read_lock_bit(serial_com &arg_serial_com, uint32_t arg_block_highest_addr);
+	void lock_bit_program(serial_com &arg_serial_com, uint32_t arg_block_highest_addr);
+	void lock_bit_enable(serial_com &arg_serial_com);
+	void lock_bit_disable(serial_com &arg_serial_com);
+	unsigned char calc_checksum(uint16_t arg_buf_len, void *arg_buf);
+	void download_calc_checksum(serial_com &arg_serial_com, uint16_t arg_buf_len, void *arg_buf);
+	void download(serial_com &arg_serial_com, unsigned char arg_checksum, uint16_t arg_buf_len, void *arg_buf);
+	void boot_area_output(serial_com &arg_serial_com, uint32_t arg_from_addr, void *arg_buf_256);
 	bool is_srd_id_verified();
 	bool is_srd_write_state_ready();
 	bool is_srd_write_state_busy();

@@ -2,6 +2,7 @@
 #define CMD_LINE_H
 
 #include "m16c_cmds.h"
+#include "m16c_mem_map.h"
 #include <string>
 
 // Main commands
@@ -22,31 +23,34 @@ typedef enum{
 	CMD_PROGRAM,
 	CMD_DOWNLOAD,
 	CMD_BOOT_AREA_OUTPUT
-}cmd_type;
+}cmdl_cmd_e;
 
 class cl_my_params{
 public:
-	unsigned char m_cmd;
-	std::string m_dev_path;
-	uint32_t m_baud_rate;
-	uint32_t m_id_addr;
-	std::string m_id_hex_str;
-	uint32_t m_from_addr;
-	uint32_t m_to_addr;
-	std::string m_full_file_name;
-	bool m_is_blank_chk_before_program;
-	bool m_is_erase_before_program;
-	unsigned int m_num_erase_program_error_retry;
+	unsigned char cmd;
+	std::string dev_path;
+	uint32_t baud_rate;
+	uint32_t id_addr;
+	std::string id_hex_str;
+	uint32_t from_addr;
+	uint32_t to_addr;
+	std::string full_file_name;
+	bool is_blank_chk_before_program;
+	bool is_erase_before_program;
+	uint32_t num_erase_program_error_retry;
+	mcu_group_e mcu_group;
 
+	// Default values for commandline parameters
 	cl_my_params() :
-		m_cmd(CMD_NONE),
-		m_baud_rate(DEFAULT_BAUD_RATE),
-		m_id_addr(0),
-		m_from_addr(0),
-		m_to_addr(0),
-		m_is_blank_chk_before_program(false),
-		m_is_erase_before_program(false),
-		m_num_erase_program_error_retry(3){
+		cmd(CMD_NONE),
+		baud_rate(DEFAULT_BAUD_RATE),
+		id_addr(0),
+		from_addr(0),
+		to_addr(0),
+		is_blank_chk_before_program(false),
+		is_erase_before_program(false),
+		num_erase_program_error_retry(3),
+		mcu_group(GROUP_NONE){
 	}
 };
 
@@ -122,12 +126,12 @@ bool parse_param_val_uint(std::string param, std::string key, T &value){
 	return false;
 }
 
-bool parse_param_exist(std::string m_arg_param, std::string m_arg_key_word);
-bool parse_param_str(std::string m_arg_param, std::string m_arg_key_word, std::string& m_arg_data_str);
-bool parse_param_yn(std::string m_arg_param, std::string m_arg_key_word, bool& m_arg_yn);
-bool parse_param_hex_str(std::string m_arg_param, std::string m_arg_key_word, std::string& m_arg_str);
-void usage(char* m_arg_0);
-bool parse_params_search(char* m_arg_cmdl_param, cl_my_params& m_arg_my_params);
-void parse_params(int m_arg_c, char* m_arg_v[], cl_my_params& m_arg_my_params);
+bool parse_param_exist(std::string arg_param, std::string arg_key_word);
+bool parse_param_str(std::string arg_param, std::string arg_key_word, std::string &arg_data_str);
+bool parse_param_yn(std::string arg_param, std::string arg_key_word, bool &arg_yn);
+bool parse_param_hex_str(std::string arg_param, std::string arg_key_word, std::string &arg_str);
+void usage(char *arg_0);
+bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params);
+void parse_params(int arg_c, char *arg_v[], cl_my_params &arg_my_params);
 
 #endif

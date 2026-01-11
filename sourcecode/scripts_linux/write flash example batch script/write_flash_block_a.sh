@@ -9,5 +9,5 @@ function cleanup {
 trap cleanup EXIT
 
 source env_linux.sh
-$APP program path=$SERIALPATH id_addr=0x0FFFDF id=00000000000000 erase=y from_addr=0x0C0000 to_addr=0x0FFFFF file="dump-block-0-to-c.bin"
+$APP program path=$SERIALPATH baud=9600 mcu=M30624FGPGP id_addr=0x0FFFDF id=00000000000000 erase=y from_addr=0x00F000 to_addr=0x00FFFF file="dump-block-a.bin"
 if [ $SHLVL -eq 1 ]; then read -n 1 -s -r -p "Press any key to continue"; fi
