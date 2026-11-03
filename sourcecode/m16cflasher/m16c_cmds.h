@@ -8,6 +8,7 @@
 
 #define SLEEP_CMD_INTERVAL 5
 #define SLEEP_AUTO_BAUD_INTERVAL 40
+#define SLEEP_AUTO_BAUD_SETTLE 50
 
 #define M16C_BL_CMD_CODE_9600                  0xB0
 #define M16C_BL_CMD_CODE_19200                 0xB1

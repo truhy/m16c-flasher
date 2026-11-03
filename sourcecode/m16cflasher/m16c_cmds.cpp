@@ -61,7 +61,6 @@ unsigned char cl_m16c_cmd::baud_rate_cmd_code(uint32_t arg_baud_rate){
 
 void cl_m16c_cmd::auto_baud(serial_com &arg_serial_com) {
 	unsigned char null_byte = 0;
-	unsigned char rx_data;
 
 	// Send a 0x00 byte 2*16 times with 40ms delay (double the number of times specified in "Easy R8C/M16C/M32C/R32C Flash Programming" PDF, but needed on the tested M30260F8)
 	for (int i = 0; i < 32; i++)
@@ -77,8 +76,17 @@ void cl_m16c_cmd::auto_baud(serial_com &arg_serial_com) {
 #endif
 	}
 
-	// Read back and throw away the value to make sure no junk is left unread
-	arg_serial_com.read_port(&rx_data, 1);
+	// The chip may send a byte from the reset glitch, another at the end of the
+	// synchronisation, both or neither. Wait for them to arrive, then drop
+	// whatever is queued so the next read sees the baud rate echo. The wait also
+	// covers the latency timer of a USB serial adapter, 16ms by default.
+#if defined(WIN32) || defined(WIN64)
+	Sleep(SLEEP_AUTO_BAUD_SETTLE);
+#else
+	usleep(SLEEP_AUTO_BAUD_SETTLE * 1000);
+#endif
+
+	arg_serial_com.purge();
 }
 
 void cl_m16c_cmd::set_baud_rate(serial_com &arg_serial_com, uint32_t arg_baud_rate){

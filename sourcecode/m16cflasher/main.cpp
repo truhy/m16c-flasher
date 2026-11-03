@@ -419,7 +419,15 @@ void process_cmd_line(cl_my_params &arg_my_params){
 			serial_com.set_timeout(500);
 			serial_com.set_params(9600, 8, NOPARITY, ONESTOPBIT, false);
 			m16c_cmd.auto_baud(serial_com);
-			m16c_cmd.set_baud_rate(serial_com, arg_my_params.baud_rate);
+
+			// Synchronisation runs at 9600, so verify it at that rate first. A
+			// failure here means the chip is not in sync, while a failure of the
+			// second request means it cannot generate the rate that was asked for.
+			m16c_cmd.set_baud_rate(serial_com, 9600);
+			if(arg_my_params.baud_rate != 9600){
+				m16c_cmd.set_baud_rate(serial_com, arg_my_params.baud_rate);
+			}
+
 			std::cout << "OK: " << arg_my_params.baud_rate << std::endl;
 			break;
 		case CMD_VER:

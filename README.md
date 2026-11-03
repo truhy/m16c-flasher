@@ -84,6 +84,21 @@ The symptom is a corrupted flash, not an error message, so read the range back a
 
 Raising the baud rate alone does not help much here, because the per byte cost does not scale with it.
 Both together do: run "autobaud baud=115200" from a freshly reset boot loader, then pass "baud=115200" to the programming command.
+The default is 9600, so a command without "baud=" runs at the slowest rate the boot loader offers.
+
+---------
+Auto-baud
+---------
+
+"autobaud" teaches the boot loader the rate by sending NUL bytes at 9600, then asks it for the rate to use from then on.
+Run it from a freshly reset boot loader, and pass the same "baud=" to the commands that follow.
+
+The chip can answer the NUL sequence with a byte left over from the reset, with a byte at the end of the synchronisation, with both or with neither.
+The receive buffer is therefore cleared before the rate is requested, so that the reply the tool reads back is the rate echo and not a left over byte.
+
+The rate is then confirmed at 9600 before a different one is requested.
+This separates the two failures: an error on the first request means the chip is not in sync, an error on the second means it cannot generate the rate that was asked for.
+Not every rate works on every board, so try them until one is reliable.
 
 -----------------------
 Discovered random notes
