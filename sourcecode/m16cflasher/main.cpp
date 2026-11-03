@@ -380,6 +380,8 @@ void process_cmd_line(cl_my_params &arg_my_params){
 
 	serial_com.open_handle(arg_my_params.dev_path);  // Open serial COM port
 
+	m16c_cmd.tx_burst = arg_my_params.is_tx_burst;
+
 	if(arg_my_params.cmd != CMD_AUTO_BAUD) {
 		serial_com.set_timeout(5000);
 		serial_com.set_params(arg_my_params.baud_rate, 8, NOPARITY, ONESTOPBIT, false);  // Set serial com device baudrate and parameters

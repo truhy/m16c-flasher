@@ -55,6 +55,27 @@ http://srecord.sourceforge.net/
 
 Sometimes the MCU will not respond, you may have to retry by powering off and on - most likely problem is MCU serial clock timing is slightly off.
 
+--------------
+Transfer speed
+--------------
+
+By default every byte of a command is written and drained on its own, which paces the stream (see the note above about the M30624FGPGP).
+Each drain waits for the byte to leave the UART. On a USB serial adapter that wait costs a round trip to the adapter, roughly 2 ms, no matter which baud rate is set.
+
+Programming is the command that suffers, because it sends 259 bytes per 256 byte page.
+Measured on an M16C/26 with boot loader VER.1.77, an FTDI adapter and 9600 baud, programming a 64 KiB range took 3 minutes 25 seconds.
+Reading the same range took 1 minute 18 seconds, which is what 9600 baud allows - reading receives in bulk and so pays no per byte cost.
+
+"tx_burst=y" sends each command in a single write instead:
+
+    m16cflasher path=/dev/ttyUSB0 program group=m16c26_64k from_addr=0x0F0000 to_addr=0x0FFFFF file=fw.bin tx_burst=y
+
+The default stays "n", because a boot loader that needs the pacing will drop bytes from a continuous stream.
+The symptom is a corrupted flash, not an error message, so read the range back and compare it against the source file before relying on the switch.
+
+Raising the baud rate alone does not help much here, because the per byte cost does not scale with it.
+Both together do: run "autobaud baud=115200" from a freshly reset boot loader, then pass "baud=115200" to the programming command.
+
 -----------------------
 Discovered random notes
 -----------------------

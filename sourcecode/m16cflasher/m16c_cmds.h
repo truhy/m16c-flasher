@@ -34,8 +34,10 @@ public:
 	unsigned char ver[8] = {};
 	unsigned char srd[2] = {};  // Status Register
 	unsigned char lock_bit = 0;  // 0 = locked, 1 = unlocked
+	bool tx_burst = false;  // Send a command in one write instead of one byte at a time
 
 	cl_m16c_cmd();
+	void tx(serial_com &arg_serial_com, void *arg_buf, uint32_t arg_len);
 	unsigned char baud_rate_cmd_code(uint32_t arg_baud_rate);
 	void auto_baud(serial_com &arg_serial_com);
 	void set_baud_rate(serial_com &arg_serial_com, uint32_t arg_baud_rate);

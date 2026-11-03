@@ -12,6 +12,40 @@
 cl_m16c_cmd::cl_m16c_cmd(){
 }
 
+/*
+	Send a command buffer to the boot loader.
+
+	By default each byte is written and drained on its own.  This paces the
+	stream, which at least one device needs: on a M30624FGPGP (boot loader
+	VER.4.04) a continuous burst is not received correctly.
+
+	Draining after every byte costs one round trip to the serial adapter.  On a
+	USB adapter that round trip dominates the transfer, so tx_burst sends the
+	whole buffer in one write for devices that accept a continuous stream.
+*/
+void cl_m16c_cmd::tx(serial_com &arg_serial_com, void *arg_buf, uint32_t arg_len){
+	unsigned char *p = (unsigned char *)arg_buf;
+	uint32_t sent = 0;
+
+	if(tx_burst){
+		while(sent < arg_len){
+			// A single write may be accepted only in part
+			auto n = arg_serial_com.write_port(p + sent, arg_len - sent);
+			if(n < 1){
+				throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
+			}
+			sent += (uint32_t)n;
+		}
+		return;
+	}
+
+	for(sent = 0; sent < arg_len; ++sent){
+		if(arg_serial_com.write_port(p + sent, 1) < 1){
+			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
+		}
+	}
+}
+
 // Older boot loaders only support 9600
 unsigned char cl_m16c_cmd::baud_rate_cmd_code(uint32_t arg_baud_rate){
 	switch(arg_baud_rate){
@@ -164,12 +198,7 @@ void cl_m16c_cmd::id_chk(serial_com &arg_serial_com, uint32_t arg_id_addr, std::
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send ID check command + addr + ID one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd, sizeof(cmd));
 }
 
 void cl_m16c_cmd::page_rd(serial_com& m_arg_serial_com, uint32_t m_arg_from_addr, void* m_arg_buf_256){
@@ -185,12 +214,7 @@ void cl_m16c_cmd::page_rd(serial_com& m_arg_serial_com, uint32_t m_arg_from_addr
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send page read command + addr one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(m_arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(m_arg_serial_com, cmd, sizeof(cmd));
 
 #if defined(WIN32) || defined(WIN64)
 	Sleep(SLEEP_CMD_INTERVAL);  // We need to wait a bit for the downloaded program to become ready
@@ -240,12 +264,7 @@ void cl_m16c_cmd::page_program(serial_com &arg_serial_com, uint32_t arg_from_add
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + data one byte at a time
-	for(uint16_t i = 0; i < 259; ++i){
-		if(arg_serial_com.write_port(cmd.buf_ptr() + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd.buf_ptr(), 259);
 }
 
 void cl_m16c_cmd::erase_block(serial_com &arg_serial_com, uint32_t arg_block_highest_addr){
@@ -262,12 +281,7 @@ void cl_m16c_cmd::erase_block(serial_com &arg_serial_com, uint32_t arg_block_hig
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + addr one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd, sizeof(cmd));
 }
 
 void cl_m16c_cmd::erase_all_unlocked(serial_com& m_arg_serial_com){
@@ -282,12 +296,7 @@ void cl_m16c_cmd::erase_all_unlocked(serial_com& m_arg_serial_com){
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + parameter one byte at a time
-	for(uint16_t i = 0; i < sizeof(m_cmd); ++i){
-		if(m_arg_serial_com.write_port(m_cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(m_arg_serial_com, m_cmd, sizeof(m_cmd));
 }
 
 void cl_m16c_cmd::read_lock_bit(serial_com &arg_serial_com, uint32_t arg_block_highest_addr){
@@ -303,12 +312,7 @@ void cl_m16c_cmd::read_lock_bit(serial_com &arg_serial_com, uint32_t arg_block_h
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + addr  one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd, sizeof(cmd));
 
 	lock_bit = 0;
 	// Read
@@ -335,12 +339,7 @@ void cl_m16c_cmd::lock_bit_program(serial_com &arg_serial_com, uint32_t arg_bloc
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + addr one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd, sizeof(cmd));
 }
 
 void cl_m16c_cmd::lock_bit_enable(serial_com &arg_serial_com){
@@ -414,13 +413,9 @@ void cl_m16c_cmd::download_calc_checksum(serial_com &arg_serial_com, uint16_t ar
 
 		memcpy(cmd.buf_ptr() + header_len, (unsigned char*)arg_buf + total_buf_sent, buf_len_to_send);
 
-		// Send data one byte at a time
+		// Send data
 		tx_len = header_len + buf_len_to_send;
-		for(uint16_t i = 0; i < tx_len; ++i){
-			if(arg_serial_com.write_port(cmd.buf_ptr() + i, 1) < 1){
-				throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-			}
-		}
+		tx(arg_serial_com, cmd.buf_ptr(), tx_len);
 
 		if(total_buf_sent == 0){
 			header_len = 0;
@@ -447,12 +442,7 @@ void cl_m16c_cmd::download(serial_com &arg_serial_com, unsigned char arg_checksu
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + data one byte at a time
-	for(uint16_t i = 0; i < cmd_buf_len; ++i){
-		if(arg_serial_com.write_port(cmd.buf_ptr() + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd.buf_ptr(), cmd_buf_len);
 }
 
 void cl_m16c_cmd::boot_area_output(serial_com &arg_serial_com, uint32_t arg_from_addr, void *arg_buf_256){
@@ -468,12 +458,7 @@ void cl_m16c_cmd::boot_area_output(serial_com &arg_serial_com, uint32_t arg_from
 	usleep(SLEEP_CMD_INTERVAL * 1000);  // We need to wait a bit for the downloaded program to become ready
 #endif
 
-	// Send command + addr one byte at a time
-	for(uint16_t i = 0; i < sizeof(cmd); ++i){
-		if(arg_serial_com.write_port(cmd + i, 1) < 1){
-			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_TX_FAIL_ID, app_error_string::messages[APP_ERROR_TX_FAIL_ID], "");
-		}
-	}
+	tx(arg_serial_com, cmd, sizeof(cmd));
 
 #if defined(WIN32) || defined(WIN64)
 	Sleep(SLEEP_CMD_INTERVAL);  // We need to wait a bit for the downloaded program to become ready

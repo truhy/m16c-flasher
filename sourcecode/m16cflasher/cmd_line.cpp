@@ -94,6 +94,10 @@ void usage(char *arg_0){
 	printf("             38400\n");
 	printf("             57600\n");
 	printf("             115200\n");
+	printf(" tx_burst=<y|n> : send each command in one write instead of one byte\n");
+	printf("                  at a time (default n). Much faster on a USB serial\n");
+	printf("                  adapter, but some boot loaders drop bytes from a\n");
+	printf("                  continuous stream. Verify by reading back.\n");
 	printf("\n");
 	printf("cmdparams:\n");
 	printf("ver              : read bootloader version\n");
@@ -330,6 +334,9 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 		return true;
 	}
 	if(parse_param_yn(arg_cmdl_param, "erase=", arg_my_params.is_erase_before_program)){
+		return true;
+	}
+	if(parse_param_yn(arg_cmdl_param, "tx_burst=", arg_my_params.is_tx_burst)){
 		return true;
 	}
 	std::string str;

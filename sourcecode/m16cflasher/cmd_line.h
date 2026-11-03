@@ -37,6 +37,7 @@ public:
 	std::string full_file_name;
 	bool is_blank_chk_before_program;
 	bool is_erase_before_program;
+	bool is_tx_burst;
 	uint32_t num_erase_program_error_retry;
 	mcu_group_e mcu_group;
 
@@ -49,6 +50,7 @@ public:
 		to_addr(0),
 		is_blank_chk_before_program(false),
 		is_erase_before_program(false),
+		is_tx_burst(false),
 		num_erase_program_error_retry(3),
 		mcu_group(GROUP_NONE){
 	}
