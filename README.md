@@ -24,6 +24,34 @@ Note, the MCU's built-in bootloader read and write commands are protected by a p
 
 The "id_chk.cmd" batch file is useful to check whether the password is correct or not.  Edit this with the correct password (ID), most companies leave it default which is all 0x00 or 0xFF.
 
+A password protected command sends an ID check first, unless the boot loader still reports the ID as verified from an earlier command.
+A failed check leaves the boot loader refusing the command, so the tool reports "ID mismatch" and exits with code 9 instead of carrying on.
+The boot loader keeps refusing until it is reset, so power cycle the board before the next attempt.
+
+"id_addr" has no default, because address 0 is the SFR area and never holds the ID bytes.
+Every command that needs the password therefore requires it.  On an M16C/26 the ID starts at 0x0FFFDF.
+
+-----------------
+Building on Linux
+-----------------
+
+Besides the CodeBlocks project there is a Makefile in "sourcecode/m16cflasher".
+It needs GNU make and a C++ compiler supporting C++20, for example GCC 10 or later.
+
+	cd sourcecode/m16cflasher
+	make
+
+The release binary is written to "sourcecode/build/linux/Release/m16cflasher".
+"make debug" builds an unstripped binary with debug symbols into "sourcecode/build/linux/Debug" instead.
+
+To install into /usr/local/bin:
+
+	sudo make install
+
+PREFIX selects another install prefix, DESTDIR a staging directory for packaging.
+"make clean" removes the objects and the binary of one configuration, "make distclean" the whole "sourcecode/build/linux" directory.
+"make help" lists all targets and variables.
+
 -----------
 Limitations
 -----------
@@ -33,6 +61,49 @@ Use SRecord to convert between .bin and .mot:
 http://srecord.sourceforge.net/
 
 Sometimes the MCU will not respond, you may have to retry by powering off and on - most likely problem is MCU serial clock timing is slightly off.
+
+--------------
+Transfer speed
+--------------
+
+By default every byte of a command is written and drained on its own, which paces the stream (see the note above about the M30624FGPGP).
+Each drain waits for the byte to leave the UART. On a USB serial adapter that wait costs a round trip to the adapter, roughly 2 ms, no matter which baud rate is set.
+
+Programming is the command that suffers, because it sends 259 bytes per 256 byte page.
+Measured on an M16C/26 with boot loader VER.1.77, an FTDI adapter and 9600 baud, programming a 64 KiB range took 3 minutes 25 seconds.
+Reading the same range took 1 minute 18 seconds, which is what 9600 baud allows - reading receives in bulk and so pays no per byte cost at this rate.
+
+"tx_burst=y" sends each command in a single write instead:
+
+    m16cflasher path=/dev/ttyUSB0 program group=m16c26_64k from_addr=0x0F0000 to_addr=0x0FFFFF file=fw.bin tx_burst=y
+
+On the setup above the same 64 KiB range took 1 minute 18 seconds, the same as reading it, and the read back image matched the source file byte for byte.
+
+The default stays "n", because a boot loader that needs the pacing will drop bytes from a continuous stream.
+The symptom is a corrupted flash, not an error message, so read the range back and compare it against the source file before relying on the switch.
+
+Raising the baud rate alone does not help much here, because the per byte cost does not scale with it.
+Both together do: run "autobaud baud=115200" from a freshly reset boot loader, then pass "baud=115200" to the programming command.
+The default is 9600, so a command without "baud=" runs at the slowest rate the boot loader offers.
+
+On the setup above, with "tx_burst=y", the same 64 KiB range took 17 seconds to program and 18 seconds to read at 57600 baud, and 12 seconds to program and 14 seconds to read at 115200 baud.
+Above 9600 baud the fixed waits per page start to show: a page read waits once before sending the command and once before reading the reply, where a page program waits once.
+That is why reading is the slower of the two at these rates.
+Doubling the rate from 57600 to 115200 saves less than the line time suggests, because those waits and the per page round trips to the adapter stay the same.
+
+---------
+Auto-baud
+---------
+
+"autobaud" teaches the boot loader the rate by sending NUL bytes at 9600, then asks it for the rate to use from then on.
+Run it from a freshly reset boot loader, and pass the same "baud=" to the commands that follow.
+
+The chip can answer the NUL sequence with a byte left over from the reset, with a byte at the end of the synchronisation, with both or with neither.
+The receive buffer is therefore cleared before the rate is requested, so that the reply the tool reads back is the rate echo and not a left over byte.
+
+The rate is then confirmed at 9600 before a different one is requested.
+This separates the two failures: an error on the first request means the chip is not in sync, an error on the second means it cannot generate the rate that was asked for.
+Not every rate works on every board, so try them until one is reliable.
 
 -----------------------
 Discovered random notes
@@ -150,7 +221,7 @@ group=[one of below]\
   m16c63_384k16k4k\
   m16c63_512k16k4k\
   m16c64_128k16k4k\
-  m16c64_256K16k4k\
+  m16c64_256k16k4k\
   m16c64_512k16k4k\
   m16c65_128k16k4k\
   m16c65_256k16k4k\

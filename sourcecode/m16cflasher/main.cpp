@@ -78,11 +78,24 @@ void process_id_chk(cl_my_params &arg_my_params, serial_com &arg_serial_com, cl_
 	arg_m16c_cmd.id_chk(arg_serial_com, arg_my_params.id_addr, arg_my_params.id_hex_str);
 	arg_m16c_cmd.rd_status(arg_serial_com);
 
-	if((arg_m16c_cmd.srd[1] & 0x0C) == 0x0C){
-		std::cout << "ID is verified" << std::endl;
-	}else{
-		std::cout << "ID mismatch" << std::endl;
+	if((arg_m16c_cmd.srd[1] & 0x0C) != 0x0C){
+		throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_ID_CHK_ID, app_error_string::messages[APP_ERROR_ID_CHK_ID], "id_addr=0x" + string_utils_ns::to_string_right_hex(arg_my_params.id_addr, 6, '0'));
 	}
+
+	std::cout << "ID is verified" << std::endl;
+}
+
+// The boot loader keeps the verified state until it is reset, so a command run
+// after a successful check does not need to send its own.
+void ensure_id_verified(cl_my_params &arg_my_params, serial_com &arg_serial_com, cl_m16c_cmd &arg_m16c_cmd){
+	arg_m16c_cmd.rd_status(arg_serial_com);
+
+	if((arg_m16c_cmd.srd[1] & 0x0C) == 0x0C){
+		std::cout << "ID is already previously matching, skipping ID check" << std::endl;
+		return;
+	}
+
+	process_id_chk(arg_my_params, arg_serial_com, arg_m16c_cmd);
 }
 
 void process_read_flash_to_file(cl_my_params &arg_my_params, serial_com &arg_serial_com, cl_m16c_cmd &arg_m16c_cmd){
@@ -380,6 +393,8 @@ void process_cmd_line(cl_my_params &arg_my_params){
 
 	serial_com.open_handle(arg_my_params.dev_path);  // Open serial COM port
 
+	m16c_cmd.tx_burst = arg_my_params.is_tx_burst;
+
 	if(arg_my_params.cmd != CMD_AUTO_BAUD) {
 		serial_com.set_timeout(5000);
 		serial_com.set_params(arg_my_params.baud_rate, 8, NOPARITY, ONESTOPBIT, false);  // Set serial com device baudrate and parameters
@@ -404,7 +419,15 @@ void process_cmd_line(cl_my_params &arg_my_params){
 			serial_com.set_timeout(500);
 			serial_com.set_params(9600, 8, NOPARITY, ONESTOPBIT, false);
 			m16c_cmd.auto_baud(serial_com);
-			m16c_cmd.set_baud_rate(serial_com, arg_my_params.baud_rate);
+
+			// Synchronisation runs at 9600, so verify it at that rate first. A
+			// failure here means the chip is not in sync, while a failure of the
+			// second request means it cannot generate the rate that was asked for.
+			m16c_cmd.set_baud_rate(serial_com, 9600);
+			if(arg_my_params.baud_rate != 9600){
+				m16c_cmd.set_baud_rate(serial_com, arg_my_params.baud_rate);
+			}
+
 			std::cout << "OK: " << arg_my_params.baud_rate << std::endl;
 			break;
 		case CMD_VER:
@@ -422,184 +445,96 @@ void process_cmd_line(cl_my_params &arg_my_params){
 			arg_my_params.from_addr = arg_my_params.from_addr & 0xFFFFFF00;
 			arg_my_params.to_addr = arg_my_params.to_addr | 0xFF;
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_read_flash_to_file(arg_my_params, serial_com, m16c_cmd);
-			}
+			process_read_flash_to_file(arg_my_params, serial_com, m16c_cmd);
 
 			break;
 		case CMD_BLANK_CHK:
 			arg_my_params.from_addr = arg_my_params.from_addr & 0xFFFFFF00;
 			arg_my_params.to_addr = arg_my_params.to_addr | 0xFF;
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_blank_check(arg_my_params, serial_com, m16c_cmd, is_blank);
-			}
+			process_blank_check(arg_my_params, serial_com, m16c_cmd, is_blank);
 
 			break;
 		case CMD_ERASE:
 			arg_my_params.from_addr = arg_my_params.from_addr & 0xFFFFFF00;
 			arg_my_params.to_addr = arg_my_params.to_addr | 0xFF;
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_clear_status(arg_my_params, serial_com, m16c_cmd);
-				process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
-				process_erase_blocks(arg_my_params, serial_com, m16c_cmd, arg_my_params.from_addr, arg_my_params.to_addr);
-			}
+			process_clear_status(arg_my_params, serial_com, m16c_cmd);
+			process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
+			process_erase_blocks(arg_my_params, serial_com, m16c_cmd, arg_my_params.from_addr, arg_my_params.to_addr);
 
 			break;
 		case CMD_ERASE_UNLOCKED:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_clear_status(arg_my_params, serial_com, m16c_cmd);
-				process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
-				process_erase_all_unlocked(arg_my_params, serial_com, m16c_cmd);
-			}
+			process_clear_status(arg_my_params, serial_com, m16c_cmd);
+			process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
+			process_erase_all_unlocked(arg_my_params, serial_com, m16c_cmd);
 
 			break;
 		case CMD_READ_LOCK_BIT:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				m16c_cmd.read_lock_bit(serial_com, arg_my_params.from_addr);
-				if(m16c_cmd.lock_bit == 0){
-					std::cout << "Lock bit = 0, block is flagged as locked" << std::endl;
-				}else{
-					std::cout << "Lock bit = 1, block is flagged as not locked" << std::endl;
-				}
+			m16c_cmd.read_lock_bit(serial_com, arg_my_params.from_addr);
+			if(m16c_cmd.lock_bit == 0){
+				std::cout << "Lock bit = 0, block is flagged as locked" << std::endl;
+			}else{
+				std::cout << "Lock bit = 1, block is flagged as not locked" << std::endl;
 			}
 
 			break;
 		case CMD_PROGRAM_LOCK_BIT:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_clear_status(arg_my_params, serial_com, m16c_cmd);
-				m16c_cmd.lock_bit_program(serial_com, arg_my_params.from_addr);
-				std::cout << "Lock bit is programmed flagged locked" << std::endl;
-			}
+			process_clear_status(arg_my_params, serial_com, m16c_cmd);
+			m16c_cmd.lock_bit_program(serial_com, arg_my_params.from_addr);
+			std::cout << "Lock bit is programmed flagged locked" << std::endl;
 
 			break;
 		case CMD_LOCK_BIT_ENABLE:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				m16c_cmd.lock_bit_enable(serial_com);
-				std::cout << "Lock bit enabled" << std::endl;
-			}
+			m16c_cmd.lock_bit_enable(serial_com);
+			std::cout << "Lock bit enabled" << std::endl;
 
 			break;
 		case CMD_LOCK_BIT_DISABLE:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				m16c_cmd.lock_bit_disable(serial_com);
-				std::cout << "Lock bit disabled" << std::endl;
-			}
+			m16c_cmd.lock_bit_disable(serial_com);
+			std::cout << "Lock bit disabled" << std::endl;
 
 			break;
 		case CMD_PROGRAM:
 			arg_my_params.from_addr = arg_my_params.from_addr & 0xFFFFFF00;
 			arg_my_params.to_addr = arg_my_params.to_addr | 0xFF;
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_clear_status(arg_my_params, serial_com, m16c_cmd);
-				process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
-				process_program_flash_from_file(arg_my_params, serial_com, m16c_cmd);
-			}
+			process_clear_status(arg_my_params, serial_com, m16c_cmd);
+			process_disable_lock_bit(arg_my_params, serial_com, m16c_cmd);
+			process_program_flash_from_file(arg_my_params, serial_com, m16c_cmd);
 
 			break;
 		case CMD_DOWNLOAD:
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_download_from_file(arg_my_params, serial_com, m16c_cmd);
-			}
+			process_download_from_file(arg_my_params, serial_com, m16c_cmd);
 
 			break;
 		case CMD_BOOT_AREA_OUTPUT:
 			arg_my_params.from_addr = arg_my_params.from_addr & 0xFFFFFF00;
 			arg_my_params.to_addr = arg_my_params.to_addr | 0xFF;
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				std::cout << "ID is already previously matching, skipping ID check" << std::endl;
-			}else{
-				process_id_chk(arg_my_params, serial_com, m16c_cmd);
-			}
+			ensure_id_verified(arg_my_params, serial_com, m16c_cmd);
 
-			m16c_cmd.rd_status(serial_com);
-			if((m16c_cmd.srd[1] & 0x0C) == 0x0C){
-				process_boot_area_output_to_file(arg_my_params, serial_com, m16c_cmd);
-			}
+			process_boot_area_output_to_file(arg_my_params, serial_com, m16c_cmd);
 
 			break;
 	}

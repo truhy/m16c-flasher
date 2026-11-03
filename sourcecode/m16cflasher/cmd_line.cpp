@@ -1,10 +1,20 @@
 #include "cmd_line.h"
+#include "app_error_string.h"
+#include "tru_exception.h"
 #include <algorithm>
 
 std::string str_toupper(std::string s)
 {
 	std::transform(s.begin(), s.end(), s.begin(),
 		[](unsigned char c){ return std::toupper(c); } // correct
+	);
+	return s;
+}
+
+std::string str_tolower(std::string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c){ return std::tolower(c); }
 	);
 	return s;
 }
@@ -84,55 +94,59 @@ void usage(char *arg_0){
 	printf("             38400\n");
 	printf("             57600\n");
 	printf("             115200\n");
+	printf(" tx_burst=<y|n> : send each command in one write instead of one byte\n");
+	printf("                  at a time (default n). Much faster on a USB serial\n");
+	printf("                  adapter, but some boot loaders drop bytes from a\n");
+	printf("                  continuous stream. Verify by reading back.\n");
 	printf("\n");
 	printf("cmdparams:\n");
 	printf("ver              : read bootloader version\n");
 	printf("autobaud         : perform auto-baud sequence\n");
 	printf("status           : read status\n");
 	printf("id_chk           : check id\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf("read             : read memory\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : from address\n");
 	printf(" to_addr=<n>      : to address\n");
 	printf(" file=<s>         : file\n");
 	printf("blank_chk        : blank check\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : from address\n");
 	printf(" to_addr=<n>      : to address\n");
 	printf("erase            : erase blocks\n");
 	printf(" mcu=<s>          : mcu\n");
 	printf(" group=<s>        : mcu group\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : from address\n");
 	printf(" to_addr=<n>      : to address\n");
 	printf("erase_unlocked   : erase all unlocked blocks\n");
 	printf(" mcu=<s>          : mcu\n");
 	printf(" group=<s>        : mcu group\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf("read_lock_bit    : read lock bit of a block\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : highest address of block\n");
 	printf("prog_lock_bit    : program lock bit of a block\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : highest address of block\n");
 	printf("lock_on          : lock bit enable\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf("lock_off         : lock bit disable\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf("program          : program flash memory\n");
 	printf(" mcu=<s>          : mcu\n");
 	printf(" group=<s>        : mcu group\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : from address\n");
 	printf(" to_addr=<n>      : to address\n");
@@ -140,11 +154,11 @@ void usage(char *arg_0){
 	printf(" erase=<y|n>      : enable erase\n");
 	printf(" file=<s>         : file\n");
 	printf("download         : download to ram and run\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" file=<s>         : file\n");
 	printf("ba_output        : boot area output\n");
-	printf(" id_addr=<n>      : addr of 1st byte of id\n");
+	printf(" id_addr=<n>      : addr of 1st byte of id, required\n");
 	printf(" id=<hex>         : id hex string\n");
 	printf(" from_addr=<n>    : from address\n");
 	printf(" to_addr=<n>      : to address\n");
@@ -220,7 +234,7 @@ void usage(char *arg_0){
 	printf("  m16c63_512k16k4k\n");
 	printf("\n");
 	printf("  m16c64_128k16k4k\n");
-	printf("  m16c64_256K16k4k\n");
+	printf("  m16c64_256k16k4k\n");
 	printf("  m16c64_512k16k4k\n");
 	printf("\n");
 	printf("  m16c65_128k16k4k\n");
@@ -302,6 +316,7 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 		return true;
 	}
 	if(parse_param_val_uint(arg_cmdl_param, "id_addr=", arg_my_params.id_addr)){
+		arg_my_params.is_id_addr_set = true;
 		return true;
 	}
 	if(parse_param_str(arg_cmdl_param, "id=", arg_my_params.id_hex_str)){
@@ -320,6 +335,9 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 		return true;
 	}
 	if(parse_param_yn(arg_cmdl_param, "erase=", arg_my_params.is_erase_before_program)){
+		return true;
+	}
+	if(parse_param_yn(arg_cmdl_param, "tx_burst=", arg_my_params.is_tx_burst)){
 		return true;
 	}
 	std::string str;
@@ -650,7 +668,9 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 			}
 		}
 	}
-	if(parse_param_str(arg_cmdl_param, "mcu_group=", str)){
+	if(parse_param_str(arg_cmdl_param, "group=", str) || parse_param_str(arg_cmdl_param, "mcu_group=", str)){
+		str = str_tolower(str);
+
 		if(str == "m16c26_24k"){
 			arg_my_params.mcu_group = GROUP_M16C26_24K;
 			return true;
@@ -916,9 +936,38 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 	return false;
 }
 
+// The boot loader rejects every flash command until an ID check has passed, so
+// these commands send one before doing their work.
+bool cmd_needs_id(unsigned char arg_cmd){
+	switch(arg_cmd){
+		case CMD_ID_CHK:
+		case CMD_READ:
+		case CMD_BLANK_CHK:
+		case CMD_ERASE:
+		case CMD_ERASE_UNLOCKED:
+		case CMD_READ_LOCK_BIT:
+		case CMD_PROGRAM_LOCK_BIT:
+		case CMD_LOCK_BIT_ENABLE:
+		case CMD_LOCK_BIT_DISABLE:
+		case CMD_PROGRAM:
+		case CMD_DOWNLOAD:
+		case CMD_BOOT_AREA_OUTPUT:
+			return true;
+		default:
+			return false;
+	}
+}
+
 void parse_params(int arg_c, char *arg_v[], cl_my_params &arg_my_params){
 	// Iterate to search for parameters
 	for(int i = 1; i < arg_c; i++){
-		parse_params_search(arg_v[i], arg_my_params);
+		if(!parse_params_search(arg_v[i], arg_my_params)){
+			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_PARAM_ID, app_error_string::messages[APP_ERROR_PARAM_ID], arg_v[i]);
+		}
+	}
+
+	// There is no sensible default: address 0 is the SFR area, never the ID bytes
+	if(cmd_needs_id(arg_my_params.cmd) && !arg_my_params.is_id_addr_set){
+		throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_PARAM_MISSING_ID, app_error_string::messages[APP_ERROR_PARAM_MISSING_ID], "id_addr=");
 	}
 }
