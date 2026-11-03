@@ -150,7 +150,7 @@ group=[one of below]\
   m16c63_384k16k4k\
   m16c63_512k16k4k\
   m16c64_128k16k4k\
-  m16c64_256K16k4k\
+  m16c64_256k16k4k\
   m16c64_512k16k4k\
   m16c65_128k16k4k\
   m16c65_256k16k4k\

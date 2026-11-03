@@ -1,10 +1,20 @@
 #include "cmd_line.h"
+#include "app_error_string.h"
+#include "tru_exception.h"
 #include <algorithm>
 
 std::string str_toupper(std::string s)
 {
 	std::transform(s.begin(), s.end(), s.begin(),
 		[](unsigned char c){ return std::toupper(c); } // correct
+	);
+	return s;
+}
+
+std::string str_tolower(std::string s)
+{
+	std::transform(s.begin(), s.end(), s.begin(),
+		[](unsigned char c){ return std::tolower(c); }
 	);
 	return s;
 }
@@ -220,7 +230,7 @@ void usage(char *arg_0){
 	printf("  m16c63_512k16k4k\n");
 	printf("\n");
 	printf("  m16c64_128k16k4k\n");
-	printf("  m16c64_256K16k4k\n");
+	printf("  m16c64_256k16k4k\n");
 	printf("  m16c64_512k16k4k\n");
 	printf("\n");
 	printf("  m16c65_128k16k4k\n");
@@ -650,7 +660,9 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 			}
 		}
 	}
-	if(parse_param_str(arg_cmdl_param, "mcu_group=", str)){
+	if(parse_param_str(arg_cmdl_param, "group=", str) || parse_param_str(arg_cmdl_param, "mcu_group=", str)){
+		str = str_tolower(str);
+
 		if(str == "m16c26_24k"){
 			arg_my_params.mcu_group = GROUP_M16C26_24K;
 			return true;
@@ -919,6 +931,8 @@ bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params){
 void parse_params(int arg_c, char *arg_v[], cl_my_params &arg_my_params){
 	// Iterate to search for parameters
 	for(int i = 1; i < arg_c; i++){
-		parse_params_search(arg_v[i], arg_my_params);
+		if(!parse_params_search(arg_v[i], arg_my_params)){
+			throw tru_exception(__func__, TRU_EXCEPT_SRC_VEN, APP_ERROR_PARAM_ID, app_error_string::messages[APP_ERROR_PARAM_ID], arg_v[i]);
+		}
 	}
 }
