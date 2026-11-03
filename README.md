@@ -71,7 +71,7 @@ Each drain waits for the byte to leave the UART. On a USB serial adapter that wa
 
 Programming is the command that suffers, because it sends 259 bytes per 256 byte page.
 Measured on an M16C/26 with boot loader VER.1.77, an FTDI adapter and 9600 baud, programming a 64 KiB range took 3 minutes 25 seconds.
-Reading the same range took 1 minute 18 seconds, which is what 9600 baud allows - reading receives in bulk and so pays no per byte cost.
+Reading the same range took 1 minute 18 seconds, which is what 9600 baud allows - reading receives in bulk and so pays no per byte cost at this rate.
 
 "tx_burst=y" sends each command in a single write instead:
 
@@ -85,6 +85,11 @@ The symptom is a corrupted flash, not an error message, so read the range back a
 Raising the baud rate alone does not help much here, because the per byte cost does not scale with it.
 Both together do: run "autobaud baud=115200" from a freshly reset boot loader, then pass "baud=115200" to the programming command.
 The default is 9600, so a command without "baud=" runs at the slowest rate the boot loader offers.
+
+On the setup above, with "tx_burst=y", the same 64 KiB range took 17 seconds to program and 18 seconds to read at 57600 baud, and 12 seconds to program and 14 seconds to read at 115200 baud.
+Above 9600 baud the fixed waits per page start to show: a page read waits once before sending the command and once before reading the reply, where a page program waits once.
+That is why reading is the slower of the two at these rates.
+Doubling the rate from 57600 to 115200 saves less than the line time suggests, because those waits and the per page round trips to the adapter stay the same.
 
 ---------
 Auto-baud
