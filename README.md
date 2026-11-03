@@ -70,6 +70,8 @@ Reading the same range took 1 minute 18 seconds, which is what 9600 baud allows 
 
     m16cflasher path=/dev/ttyUSB0 program group=m16c26_64k from_addr=0x0F0000 to_addr=0x0FFFFF file=fw.bin tx_burst=y
 
+On the setup above the same 64 KiB range took 1 minute 18 seconds, the same as reading it, and the read back image matched the source file byte for byte.
+
 The default stays "n", because a boot loader that needs the pacing will drop bytes from a continuous stream.
 The symptom is a corrupted flash, not an error message, so read the range back and compare it against the source file before relying on the switch.
 
