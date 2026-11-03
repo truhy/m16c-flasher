@@ -24,6 +24,27 @@ Note, the MCU's built-in bootloader read and write commands are protected by a p
 
 The "id_chk.cmd" batch file is useful to check whether the password is correct or not.  Edit this with the correct password (ID), most companies leave it default which is all 0x00 or 0xFF.
 
+-----------------
+Building on Linux
+-----------------
+
+Besides the CodeBlocks project there is a Makefile in "sourcecode/m16cflasher".
+It needs GNU make and a C++ compiler supporting C++20, for example GCC 10 or later.
+
+	cd sourcecode/m16cflasher
+	make
+
+The release binary is written to "sourcecode/build/linux/Release/m16cflasher".
+"make debug" builds an unstripped binary with debug symbols into "sourcecode/build/linux/Debug" instead.
+
+To install into /usr/local/bin:
+
+	sudo make install
+
+PREFIX selects another install prefix, DESTDIR a staging directory for packaging.
+"make clean" removes the objects and the binary of one configuration, "make distclean" the whole "sourcecode/build/linux" directory.
+"make help" lists all targets and variables.
+
 -----------
 Limitations
 -----------
