@@ -31,6 +31,7 @@ public:
 	std::string dev_path;
 	uint32_t baud_rate;
 	uint32_t id_addr;
+	bool is_id_addr_set;
 	std::string id_hex_str;
 	uint32_t from_addr;
 	uint32_t to_addr;
@@ -46,6 +47,7 @@ public:
 		cmd(CMD_NONE),
 		baud_rate(DEFAULT_BAUD_RATE),
 		id_addr(0),
+		is_id_addr_set(false),
 		from_addr(0),
 		to_addr(0),
 		is_blank_chk_before_program(false),
@@ -133,6 +135,7 @@ bool parse_param_str(std::string arg_param, std::string arg_key_word, std::strin
 bool parse_param_yn(std::string arg_param, std::string arg_key_word, bool &arg_yn);
 bool parse_param_hex_str(std::string arg_param, std::string arg_key_word, std::string &arg_str);
 void usage(char *arg_0);
+bool cmd_needs_id(unsigned char arg_cmd);
 bool parse_params_search(char *arg_cmdl_param, cl_my_params &arg_my_params);
 void parse_params(int arg_c, char *arg_v[], cl_my_params &arg_my_params);
 

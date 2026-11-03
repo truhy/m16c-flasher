@@ -24,6 +24,13 @@ Note, the MCU's built-in bootloader read and write commands are protected by a p
 
 The "id_chk.cmd" batch file is useful to check whether the password is correct or not.  Edit this with the correct password (ID), most companies leave it default which is all 0x00 or 0xFF.
 
+A password protected command sends an ID check first, unless the boot loader still reports the ID as verified from an earlier command.
+A failed check leaves the boot loader refusing the command, so the tool reports "ID mismatch" and exits with code 9 instead of carrying on.
+The boot loader keeps refusing until it is reset, so power cycle the board before the next attempt.
+
+"id_addr" has no default, because address 0 is the SFR area and never holds the ID bytes.
+Every command that needs the password therefore requires it.  On an M16C/26 the ID starts at 0x0FFFDF.
+
 -----------------
 Building on Linux
 -----------------

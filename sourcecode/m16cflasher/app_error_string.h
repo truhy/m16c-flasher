@@ -13,7 +13,9 @@
 	item(APP_ERROR_ECHO_ID, "Echo failed") \
 	item(APP_ERROR_RETRY, "Retries exhausted") \
 	item(APP_ERROR_ECHO_INFO_ID, "Transmitted 0x{:02x} but received 0x{:02x}") \
-	item(APP_ERROR_PARAM_ID, "Unrecognised parameter or value")
+	item(APP_ERROR_PARAM_ID, "Unrecognised parameter or value") \
+	item(APP_ERROR_PARAM_MISSING_ID, "Missing parameter") \
+	item(APP_ERROR_ID_CHK_ID, "ID mismatch")
 
 // Create enum from error message list
 CREATE_ENUM(app_error_e, APP_ERROR_LIST)
